@@ -9,6 +9,8 @@ jobs:
   # Android builds run on Linux to avoid the higher-cost macOS runner.
   build-android:
     runs-on: ubuntu-22.04
+    env:
+      HAS_ANDROID_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' }}
     permissions:
       contents: write
     steps:
@@ -22,12 +24,12 @@ jobs:
       - name: Download Android keystore
         id: android_keystore
         uses: timheuer/base64-to-file@v1.2
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        if: env.HAS_ANDROID_KEYSTORE == 'true'
         with:
           fileName: keystore.jks
           encodedString: ${{ secrets.KEYSTORE_BASE64 }}
       - name: Create key.properties
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        if: env.HAS_ANDROID_KEYSTORE == 'true'
         run: |
           echo "storeFile=${{ steps.android_keystore.outputs.filePath }}" > simple_live_app/android/key.properties
           echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> simple_live_app/android/key.properties
